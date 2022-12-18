@@ -10,3 +10,5 @@
 # Undo-tree save-files
 *.~undo-tree
 straight/
+eln-cache/
+.local
