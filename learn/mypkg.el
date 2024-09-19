@@ -18,9 +18,9 @@
   (let ((name (symbol-name value)))
     (when (and (not (string-search "--" name))
                (if (string-search "-" name)
-              (string-suffix-p "-p" name)
-            (string-suffix-p "p" name)))
-        (setq global-predicates (cons name global-predicates)))))
+                   (string-suffix-p "-p" name)
+                 (string-suffix-p "p" name)))
+      (setq global-predicates (cons name global-predicates)))))
 
 (mapatoms #'parse-obarray obarray)
 (message "%s" global-predicates)
@@ -51,5 +51,5 @@
 (message "%s" (functionp person))
 
 (fixnump 1)
-(provide 'learn)
-;;; learn.el ends here
+(provide 'mypkg)
+;;; mypkg.el ends here

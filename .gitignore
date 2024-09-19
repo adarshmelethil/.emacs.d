@@ -12,3 +12,5 @@
 straight/
 eln-cache/
 .local
+
+**/tmp/

@@ -1,4 +1,4 @@
-; -*- lexical-binding: t; -*-
+                                        ; -*- lexical-binding: t; -*-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                                         ;              Bootstrap              ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -25,25 +25,15 @@
 
 (straight-use-package 'use-package)
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                                         ;               Settings              ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(setq work-directory (expand-file-name "~/work")
-      org-directory (concat work-directory "org")
-      script-directory (concat work-directory "script")
-      bin-directory (concat work-directory "bin")
-      src-directory (concat work-directory "src")
-      conda-root-directory (expand-file-name "~/miniforge3"))
-
-
 (setq user-full-name "Adarsh Melethil"
       user-mail-address "adarshmelethil@gmail.com"
       ;; Startup
-      ;; inhibit-startup-screen t
+      inhibit-startup-screen t
       inhibit-startup-echo-area-message "adarshmelethil"
-      ;; initial-scratch-message "Adarsh's Emacs"
+      initial-scratch-message ""
       initial-buffer-choice #'messages-buffer
       ;; Line numbers
       display-line-numbers-major-tick 0
@@ -55,55 +45,48 @@
       show-paren-style 'mixed
 
       ;; General
-      switch-to-buffer-in-dedicated-window 'pop)
+      switch-to-buffer-in-dedicated-window 'pop
+
+      work-dir (expand-file-name "~/work")
+      org-dir (expand-file-name "org" work-dir)
+      script-dir (expand-file-name "script" work-dir)
+      bin-dir (expand-file-name "bin" work-dir)
+      src-dir (expand-file-name "src" work-dir)
+      conda-root-dir (expand-file-name "~/miniforge3"))
 
 (set-frame-font (font-spec
                  :family
                  "ProggyCleanTT Nerd Font Mono"
                  :size 24 :weight 'light))
 
-(add-to-list 'initial-frame-alist '(fullscreen . maximized))
+(add-to-list 'default-frame-alist '(fullscreen . maximized))
 
 (when (and (featurep 'native-compile) (not (native-comp-available-p)))
   (delq 'native-compile features))
+
 (when (bound-and-true-p module-file-suffix)
   (push 'dynamic-modules features))
+
 (when (fboundp #'json-parse-string)
   (push 'jansson features))
+
 (when (eq system-type 'darwin)
   (customize-set-variable 'native-comp-driver-options '("-Wl,-w")))
 
 ;; https://github.com/daviwil/emacs-from-scratch
 (defun efs/display-startup-time ()
   (message "Emacs loaded in %s with %d garbage collections."
-   (format "%.2f seconds"
-    (float-time (time-subtract after-init-time before-init-time)))
-   gcs-done))
+           (format "%.2f seconds"
+                   (float-time (time-subtract after-init-time before-init-time)))
+           gcs-done))
 (add-hook 'emacs-startup-hook #'efs/display-startup-time)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                                         ;               Packages              ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(use-package dash)  ; -map
-(use-package eros)  ; Evaluation Result OverlayS for Emacs Lisp.
-(use-package undo-tree
-  :config
-  (setq undo-tree-visualizer-diff t
-        undo-tree-auto-save-history t
-        undo-tree-enable-undo-in-region t
-        ;; Increase undo limits to avoid emacs prematurely truncating the undo
-        ;; history and corrupting the tree. This is larger than the undo-fu
-        ;; defaults because undo-tree trees consume exponentially more space,
-        ;; and then some when `undo-tree-enable-undo-in-region' is involved. See
-        ;; syl20bnr/spacemacs#12110
-        undo-limit 800000           ; 800kb (default is 160kb)
-        undo-strong-limit 12000000  ; 12mb  (default is 240kb)
-        undo-outer-limit 128000000)
-  )
-
+                                        ; Core
+(setq edebug-all-defs t)
 (use-package magit)
-
-;; Key bindings
 (use-package evil
   :demand t
   :preface
@@ -128,55 +111,65 @@
    ;; It's infuriating that innocuous "beginning of line" or "end of line"
    ;; errors will abort macros, so suppress them:
    evil-kbd-macro-suppress-motion-error t
-   evil-regexp-search t
-   )
+   evil-regexp-search t)
   :demand t
-  :config
-  (evil-select-search-module 'evil-search-module 'evil-search)  ;; evil-search OR isearch
-  ;; == DOOM ==
-  ;; PERF: Stop copying the selection to the clipboard each time the cursor
-  ;; moves in visual mode. Why? Because on most non-X systems (and in terminals
-  ;; with clipboard plugins like xclip.el active), Emacs will spin up a new
-  ;; process to communicate with the clipboard for each movement. On Windows,
-  ;; older versions of macOS (pre-vfork), and Waylang (without pgtk), this is
-  ;; super expensive and can lead to freezing and/or zombie processes.
-  ;;
-  ;; UX: It also clobbers clipboard managers (see emacs-evil/evil#336).
-  ;; (setq evil-visual-update-x-selection-p nil)
-
-  ;; == DOOM ==
-  ;; Start help-with-tutorial in emacs state
-  (advice-add #'help-with-tutorial :after (lambda (&rest _) (evil-emacs-state +1)))
-
+  :config (evil-select-search-module 'evil-search-module 'evil-search)  ;; evil-search OR isearch
   ;; == DOOM ==
   ;; Ensure `evil-shift-width' always matches `tab-width'; evil does not police
   ;; this itself, so we must.
-  (setq-hook! 'after-change-major-mode-hook evil-shift-width tab-width)
-  )
-(use-package evil-args)
-(use-package! evil-easymotion
-  :commands evilem-create evilem-default-keybindings)
-;; (use-package evil-embrace)
-;; (use-package evil-quick-diff)
+  (setq-hook! 'after-change-major-mode-hook evil-shift-width tab-width))
+
+;; (use-package evil-args)
+;; (use-package! evil-easymotion
+;;   :commands evilem-create evilem-default-keybindings)
+;; ;; (use-package evil-embrace)
+;; ;; (use-package evil-quick-diff)
+;; ;; (use-package evil-escape)
 ;; (use-package evil-escape)
-(use-package evil-escape)
-(use-package evil-traces
-  :config
-  (evil-traces-use-diff-faces) ; if you want to use diff's faces
-  (evil-traces-mode))
-(use-package evil-exchange)
-(use-package evil-indent-plus)
-(use-package evil-surround)
-(use-package evil-lion
-  ;; 'gl' align to char
-  )
-(use-package evil-nerd-commenter)
-(use-package evil-visualstar
-  ;; #/* to search backward/forward
-  )
-(use-package exato
-  ;; 'x' for xml obj
-  )
-(use-package evil-collection
-  :config (evil-collection-init))
-;; (use-package evil-easymotion)
+;; (use-package evil-traces
+;;   :config
+;;   (evil-traces-use-diff-faces) ; if you want to use diff's faces
+;;   (evil-traces-mode))
+;; (use-package evil-exchange)
+;; (use-package evil-indent-plus)
+;; (use-package evil-surround)
+;; (use-package evil-lion) ;; 'gl' align to char
+;; (use-package evil-nerd-commenter)
+;; (use-package evil-visualstar)  ;; #/* to search backward/forward
+
+
+;; (use-package evil-collection
+;;   :config (evil-collection-init))
+;; ;; (use-package evil-easymotion)
+
+;;                                         ; Coding
+;; (use-package dash)  ; -map
+
+;;                                         ; Display
+;; (use-package eros)  ; Evaluation Result OverlayS for Emacs Lisp.
+
+;;                                         ; Editor
+;; (use-package undo-tree
+;;   :config
+;;   (setq undo-tree-visualizer-diff t
+;;         undo-tree-auto-save-history t
+;;         undo-tree-enable-undo-in-region t
+;;         ;; Increase undo limits to avoid emacs prematurely truncating the undo
+;;         ;; history and corrupting the tree. This is larger than the undo-fu
+;;         ;; defaults because undo-tree trees consume exponentially more space,
+;;         ;; and then some when `undo-tree-enable-undo-in-region' is involved. See
+;;         ;; syl20bnr/spacemacs#12110
+;;         undo-limit 800000           ; 800kb (default is 160kb)
+;;         undo-strong-limit 12000000  ; 12mb  (default is 240kb)
+;;         undo-outer-limit 128000000)
+;;   )
+
+
+;; ;; Key bindings
+
+;; (use-package exato
+;;   ;; 'x' for xml obj
+;;   )
+
+
+;; ;; (package-activate-all)
