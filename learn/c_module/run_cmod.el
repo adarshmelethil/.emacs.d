@@ -6,10 +6,13 @@
 (defun main ()
   (let ((libs-dir (expand-file-name "libs" script-dir)))
     (message "libs: %s" libs-dir)
-    ;; (add-to-list 'load-path libs-dir)
     (message "%s" module-file-suffix)
-    ;; (require)
-    (module-load (expand-file-name "mymod.so" libs-dir))
+
+    ;; Loading module my filename
+    ;; (module-load (expand-file-name "mymod.so" libs-dir))
+
+    (add-to-list 'load-path libs-dir)
+    (require 'mymod)
     ))
 
 (when (member "-scriptload" command-line-args)
