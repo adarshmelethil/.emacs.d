@@ -13,6 +13,8 @@
 
 #define _Esym(name) (env->intern(env, #name))
 #define Esym(name) _Esym(name)
+
+
 #define Estr(value) (env->make_string(env, value, strlen(value)))
 
 #define FUNCALL(name, ...) \

@@ -14,4 +14,11 @@ eln-cache/
 .local
 
 **/tmp/
+**/.DS_Store
+**/.idea
+**/*.log
 **/*.dSYM/
+**/__pycache__/
+
+.venv/
+
